@@ -78,6 +78,24 @@
   notify: Restart Metricbeat
   when: metricbeat_postgresql_enabled | bool
 
+- name: Enable prometheus module for monitoring
+  ansible.builtin.command: metricbeat modules enable prometheus
+  register: enable_prometheus_output
+  changed_when: "'Already enabled' not in enable_prometheus_output.stdout"
+  become: true
+  when: metricbeat_prometheus_enabled | bool
+
+- name: Write Metricbeat prometheus module configuration file
+  ansible.builtin.template:
+    src: prometheus_module.yml.j2
+    dest: /etc/metricbeat/modules.d/prometheus.yml
+    owner: root
+    group: root
+    mode: '0600'
+  become: true
+  notify: Restart Metricbeat
+  when: metricbeat_prometheus_enabled | bool
+
 - name: Ensure Metricbeat service is started and enabled on boot
   ansible.builtin.systemd_service:
     name: "{{ metricbeat_service_name }}"

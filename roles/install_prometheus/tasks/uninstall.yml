@@ -1,0 +1,22 @@
+---
+# uninstall file for install_prometheus role
+
+- name: Check if manifests.yaml exists
+  ansible.builtin.stat:
+    path: /tmp/prometheus/manifests.yaml
+  register: manifests_stat
+
+- name: Delete Prometheus resources using manifests.yaml (as non-root user)
+  ansible.builtin.command:
+    cmd: "sg docker -c 'kubectl delete -f /tmp/prometheus/manifests.yaml'"
+  become: true
+  become_user: "{{ minikube_user | default('ansible') }}"
+  failed_when: false
+  changed_when: true
+  when: manifests_stat.stat.exists
+
+- name: Clean up temporary directory
+  ansible.builtin.file:
+    path: /tmp/prometheus
+    state: absent
+  become: true

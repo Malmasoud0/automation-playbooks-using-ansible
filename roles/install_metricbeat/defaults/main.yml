@@ -30,3 +30,8 @@ metricbeat_postgresql_period: "10s"
 elasticsearch_security_enabled: true
 metricbeat_elasticsearch_username: "elastic"
 metricbeat_elasticsearch_password: "{{ vault_elasticsearch_admin_password }}"
+
+# Prometheus Module Configuration
+metricbeat_prometheus_enabled: true
+metricbeat_prometheus_host: "0.0.0.0"
+metricbeat_prometheus_port: 9201

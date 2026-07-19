@@ -1,0 +1,84 @@
+---
+# tasks file for install_minikube role
+
+- name: Ensure Ubuntu system is targeted
+  ansible.builtin.fail:
+    msg: "This role is designed specifically for Ubuntu systems. Found: {{ ansible_distribution }}"
+  when: ansible_distribution != 'Ubuntu'
+
+- name: Install system dependencies for Minikube and Docker
+  ansible.builtin.apt:
+    name:
+      - curl
+      - ca-certificates
+      - apt-transport-https
+      - gnupg
+      - conntrack
+    state: present
+    update_cache: true
+  become: true
+
+- name: Install Docker
+  ansible.builtin.apt:
+    name: docker.io
+    state: present
+  become: true
+
+- name: Ensure Docker service is started and enabled on boot
+  ansible.builtin.systemd_service:
+    name: docker
+    state: started
+    enabled: true
+  become: true
+
+- name: Ensure minikube user is in the docker group
+  ansible.builtin.user:
+    name: "{{ minikube_user }}"
+    groups: docker
+    append: true
+  become: true
+
+- name: Download Minikube binary
+  ansible.builtin.get_url:
+    url: "{{ minikube_binary_url }}"
+    dest: "{{ minikube_dest_path }}"
+    mode: '0755'
+  become: true
+
+- name: Fetch latest stable kubectl version
+  ansible.builtin.uri:
+    url: "https://dl.k8s.io/release/stable.txt"
+    return_content: true
+  register: kubectl_stable_version_response
+  when: kubectl_version == 'latest'
+
+- name: Set kubectl version variable
+  ansible.builtin.set_fact:
+    resolved_kubectl_version: "{{ kubectl_stable_version_response.content | trim if kubectl_version == 'latest' else kubectl_version }}"
+
+- name: Download kubectl binary
+  ansible.builtin.get_url:
+    url: "https://dl.k8s.io/release/{{ resolved_kubectl_version }}/bin/linux/amd64/kubectl"
+    dest: "{{ kubectl_dest_path }}"
+    mode: '0755'
+  become: true
+
+- name: Check if Minikube is already running
+  ansible.builtin.command:
+    cmd: "sg docker -c '{{ minikube_dest_path }} status'"
+  register: minikube_status_check
+  become: true
+  become_user: "{{ minikube_user }}"
+  failed_when: false
+  changed_when: false
+  when: minikube_start | bool
+
+- name: Start Minikube cluster (as non-root user)
+  ansible.builtin.command:
+    cmd: "sg docker -c '{{ minikube_dest_path }} start --driver={{ minikube_driver }}'"
+  become: true
+  become_user: "{{ minikube_user }}"
+  changed_when: true
+  when:
+    - minikube_start | bool
+    - "'Running' not in minikube_status_check.stdout"

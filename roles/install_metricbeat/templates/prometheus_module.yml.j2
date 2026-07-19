@@ -1,0 +1,7 @@
+# Module: prometheus
+# Docs: https://www.elastic.co/guide/en/beats/metricbeat/8.x/metricbeat-module-prometheus.html
+
+- module: prometheus
+  metricsets: ["remote_write"]
+  host: "{{ metricbeat_prometheus_host | default('0.0.0.0') }}"
+  port: "{{ metricbeat_prometheus_port | default('9201') }}"

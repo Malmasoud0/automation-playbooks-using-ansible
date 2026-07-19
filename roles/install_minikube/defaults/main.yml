@@ -1,0 +1,18 @@
+---
+# defaults file for install_minikube role on Ubuntu 24.04 LTS
+
+# Minikube configuration
+minikube_version: "latest"
+minikube_binary_url: "https://storage.googleapis.com/minikube/releases/{{ minikube_version }}/minikube-linux-amd64"
+minikube_dest_path: "/usr/local/bin/minikube"
+
+# Kubectl configuration
+kubectl_version: "latest"
+kubectl_dest_path: "/usr/local/bin/kubectl"
+
+# The user that should be added to the docker group and run minikube commands
+minikube_user: "{{ ansible_user_id | default('ansible') }}"
+
+# Startup options
+minikube_start: true
+minikube_driver: "docker"

@@ -1,0 +1,40 @@
+---
+# uninstall file for install_minikube role
+
+- name: Check if Minikube binary exists
+  ansible.builtin.stat:
+    path: "{{ minikube_dest_path }}"
+  register: minikube_binary_stat
+
+- name: Stop and delete Minikube cluster
+  ansible.builtin.command:
+    cmd: "sg docker -c '{{ minikube_dest_path }} delete --all --purge'"
+  become: true
+  become_user: "{{ minikube_user }}"
+  failed_when: false
+  changed_when: true
+  when: minikube_binary_stat.stat.exists
+
+- name: Remove Minikube configuration and cache directory
+  ansible.builtin.file:
+    path: "/home/{{ minikube_user }}/.minikube"
+    state: absent
+  become: true
+
+- name: Remove Kube config directory
+  ansible.builtin.file:
+    path: "/home/{{ minikube_user }}/.kube"
+    state: absent
+  become: true
+
+- name: Remove Minikube binary
+  ansible.builtin.file:
+    path: "{{ minikube_dest_path }}"
+    state: absent
+  become: true
+
+- name: Remove kubectl binary
+  ansible.builtin.file:
+    path: "{{ kubectl_dest_path }}"
+    state: absent
+  become: true

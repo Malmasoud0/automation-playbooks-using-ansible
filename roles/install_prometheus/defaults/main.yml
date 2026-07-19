@@ -1,0 +1,11 @@
+---
+# defaults file for install_prometheus role on Minikube
+
+prometheus_namespace: "monitoring"
+
+# Endpoint pointing to the host Metricbeat remote write listener via Minikube's host gateway
+prometheus_elasticsearch_url: "http://host.minikube.internal:9201/write"
+prometheus_elasticsearch_username: "elastic"
+prometheus_elasticsearch_password: "{{ vault_elasticsearch_admin_password }}"
+
+prometheus_image: "prom/prometheus:v2.52.0"

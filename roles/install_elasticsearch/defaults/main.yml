@@ -17,7 +17,7 @@ elasticsearch_service_enabled: "{{ services_enabled | default(true) }}"
 # Cluster Configuration
 elasticsearch_cluster_name: "wsl-monitoring-cluster"
 elasticsearch_node_name: "wsl-node-1"
-elasticsearch_network_host: "127.0.0.1"
+elasticsearch_network_host: "0.0.0.0"
 elasticsearch_http_port: 9200
 
 # Security Configuration

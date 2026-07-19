@@ -1,0 +1,40 @@
+---
+# tasks file for install_prometheus role
+
+- name: Ensure Kubernetes is reachable (as non-root user)
+  ansible.builtin.command:
+    cmd: "sg docker -c 'kubectl cluster-info'"
+  register: cluster_info_check
+  become: true
+  become_user: "{{ minikube_user | default('ansible') }}"
+  changed_when: false
+
+- name: Create local temporary directory for templated manifests
+  ansible.builtin.file:
+    path: /tmp/prometheus
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Template Prometheus Kubernetes manifests
+  ansible.builtin.template:
+    src: prometheus-manifests.yaml.j2
+    dest: /tmp/prometheus/manifests.yaml
+    mode: '0644'
+  become: true
+
+- name: Apply Prometheus Kubernetes manifests (as non-root user)
+  ansible.builtin.command:
+    cmd: "sg docker -c 'kubectl apply -f /tmp/prometheus/manifests.yaml'"
+  become: true
+  become_user: "{{ minikube_user | default('ansible') }}"
+  register: apply_manifests_output
+  changed_when: "'created' in apply_manifests_output.stdout or 'configured' in apply_manifests_output.stdout"
+
+- name: Wait for Prometheus deployment to roll out successfully
+  ansible.builtin.command:
+    cmd: "sg docker -c 'kubectl rollout status deployment/prometheus-deployment -n {{ prometheus_namespace }} --timeout=120s'"
+  become: true
+  become_user: "{{ minikube_user | default('ansible') }}"
+  register: rollout_status_output
+  changed_when: false

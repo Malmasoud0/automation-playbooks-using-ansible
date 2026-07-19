@@ -1,0 +1,12 @@
+---
+# defaults file for install_metricbeat_k8s role
+
+metricbeat_k8s_namespace: "monitoring"
+
+# Endpoint pointing to the host Elasticsearch instance via Minikube's host gateway
+metricbeat_k8s_elasticsearch_url: "http://host.minikube.internal:9200"
+metricbeat_k8s_elasticsearch_username: "elastic"
+metricbeat_k8s_elasticsearch_password: "{{ vault_elasticsearch_admin_password }}"
+
+# Docker image version (matching the host Metricbeat version!)
+metricbeat_k8s_image: "docker.elastic.co/beats/metricbeat:8.19.18"

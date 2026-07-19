@@ -41,6 +41,18 @@
       ansible.builtin.include_tasks: roles/install_postgresql_16/tasks/uninstall.yml
       tags: [postgresql, uninstall]
 
+    - name: Uninstall Metricbeat Kubernetes Stack
+      ansible.builtin.include_tasks: roles/install_metricbeat_k8s/tasks/uninstall.yml
+      tags: [metricbeat_k8s, kubernetes, uninstall]
+
+    - name: Uninstall Prometheus Stack
+      ansible.builtin.include_tasks: roles/install_prometheus/tasks/uninstall.yml
+      tags: [prometheus, kubernetes, uninstall]
+
+    - name: Uninstall Minikube and Kubectl
+      ansible.builtin.include_tasks: roles/install_minikube/tasks/uninstall.yml
+      tags: [minikube, kubernetes, uninstall]
+
     - name: Uninstall Ansible and PPA repository
       ansible.builtin.include_tasks: roles/install_ansible/tasks/uninstall.yml
       tags: [ansible, uninstall]

@@ -20,3 +20,9 @@
       tags: [metricbeat, elastic, monitor]
     - role: install_postgresql_16
       tags: [postgresql, postgres, database]
+    - role: install_minikube
+      tags: [minikube, kubernetes]
+    - role: install_prometheus
+      tags: [prometheus, kubernetes]
+    - role: install_metricbeat_k8s
+      tags: [metricbeat_k8s, kubernetes]
