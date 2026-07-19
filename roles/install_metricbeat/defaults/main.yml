@@ -1,0 +1,32 @@
+---
+# defaults file for install_metricbeat role on Ubuntu 24.04 LTS
+
+metricbeat_packages:
+  - metricbeat
+
+# Service Configuration
+metricbeat_service_name: "metricbeat"
+metricbeat_service_state: "started"
+metricbeat_service_enabled: "{{ services_enabled | default(true) }}"
+
+# Elasticsearch and Kibana Endpoint Settings
+metricbeat_elasticsearch_hosts:
+  - "127.0.0.1:9200"
+
+metricbeat_kibana_host: "127.0.0.1:5601"
+
+# Resource Monitoring Configuration
+metricbeat_system_period: "10s"
+
+# PostgreSQL Monitoring Configuration
+metricbeat_postgresql_enabled: true
+metricbeat_postgresql_hosts:
+  - "postgres://localhost:5432/test?sslmode=disable"
+metricbeat_postgresql_username: "ahmed"
+metricbeat_postgresql_password: "{{ vault_postgresql_database_password }}"
+metricbeat_postgresql_period: "10s"
+
+# Security Configuration
+elasticsearch_security_enabled: true
+metricbeat_elasticsearch_username: "elastic"
+metricbeat_elasticsearch_password: "{{ vault_elasticsearch_admin_password }}"

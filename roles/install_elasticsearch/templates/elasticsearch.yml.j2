@@ -1,0 +1,25 @@
+# ======================== Elasticsearch Configuration =========================
+# Managed by Ansible
+
+cluster.name: {{ elasticsearch_cluster_name }}
+node.name: {{ elasticsearch_node_name }}
+
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+
+network.host: {{ elasticsearch_network_host }}
+http.port: {{ elasticsearch_http_port }}
+
+discovery.type: single-node
+
+# ---------------------------------- Security ----------------------------------
+xpack.security.enabled: {{ elasticsearch_security_enabled | lower }}
+xpack.security.enrollment.enabled: false
+
+# Keep SSL disabled for simple HTTP local connection (no TLS cert management required)
+xpack.security.http.ssl:
+  enabled: false
+
+# Transport SSL must be disabled for single-node developer cluster to start without certs
+xpack.security.transport.ssl:
+  enabled: false

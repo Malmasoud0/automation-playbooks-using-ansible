@@ -1,0 +1,8 @@
+---
+# handlers file for install_kibana role
+
+- name: Restart Kibana
+  ansible.builtin.systemd_service:
+    name: "{{ kibana_service_name }}"
+    state: restarted
+  become: true

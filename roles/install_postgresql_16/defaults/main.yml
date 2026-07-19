@@ -1,0 +1,31 @@
+---
+# defaults file for install_postgresql_16 role on Ubuntu 24.04 LTS
+
+# The version of PostgreSQL to install
+postgresql_version: "16"
+
+# Packages to install
+postgresql_packages:
+  - "postgresql-{{ postgresql_version }}"
+  - "postgresql-client-{{ postgresql_version }}"
+  - "python3-psycopg2" # required for Ansible's postgresql modules to communicate with the DB
+
+
+# GPG signing key for PostgreSQL official repository
+postgresql_apt_key_url: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+
+# Official APT repository definition
+postgresql_apt_repository: "deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
+
+# Service configuration
+postgresql_service_name: "postgresql"
+postgresql_service_state: "started"
+postgresql_service_enabled: "{{ services_enabled | default(true) }}"
+
+# Database and User provisioning defaults
+postgresql_database_name: "test"
+postgresql_database_user: "ahmed"
+# Vault-encrypted password (decrypted dynamically during play run)
+postgresql_database_password: "{{ vault_postgresql_database_password }}"
+
+

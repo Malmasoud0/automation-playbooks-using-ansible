@@ -1,0 +1,72 @@
+---
+# tasks file for install_kibana role
+
+- name: Ensure Ubuntu system is targeted
+  ansible.builtin.fail:
+    msg: "This role is designed specifically for Ubuntu systems. Found: {{ ansible_distribution }}"
+  when: ansible_distribution != 'Ubuntu'
+
+- name: Install system dependencies for APT repositories
+  ansible.builtin.apt:
+    name:
+      - curl
+      - ca-certificates
+      - gnupg
+    state: present
+    update_cache: true
+  become: true
+
+- name: Create secure APT keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Download official Elasticsearch APT GPG key securely (for Kibana)
+  ansible.builtin.get_url:
+    url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+    dest: "/etc/apt/keyrings/elasticsearch-keyring.asc"
+    mode: '0644'
+  become: true
+
+- name: Add official Elasticsearch APT repository with signed-by keyring
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/elasticsearch-keyring.asc] https://artifacts.elastic.co/packages/8.x/apt stable main"
+    state: present
+    update_cache: true
+    filename: elastic
+  become: true
+
+- name: Install Kibana
+  ansible.builtin.apt:
+    name: "{{ kibana_packages }}"
+    state: present
+  become: true
+
+- name: Write Kibana configuration file
+  ansible.builtin.template:
+    src: kibana.yml.j2
+    dest: /etc/kibana/kibana.yml
+    owner: root
+    group: kibana
+    mode: '0660'
+  become: true
+  notify: Restart Kibana
+
+- name: Flush handlers to restart Kibana immediately if needed
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure Kibana service is started and enabled on boot
+  ansible.builtin.systemd_service:
+    name: "{{ kibana_service_name }}"
+    state: "{{ kibana_service_state }}"
+    enabled: "{{ kibana_service_enabled }}"
+    daemon_reload: true
+  become: true
+
+- name: Wait for Kibana to start and listen on port {{ kibana_server_port }}
+  ansible.builtin.wait_for:
+    port: "{{ kibana_server_port }}"
+    delay: 5
+    timeout: 90

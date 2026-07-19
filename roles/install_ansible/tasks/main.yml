@@ -1,0 +1,36 @@
+---
+# tasks file for install_ansible role
+
+- name: Ensure Ubuntu system is targeted
+  ansible.builtin.fail:
+    msg: "This role is designed specifically for Ubuntu systems. Found: {{ ansible_distribution }}"
+  when: ansible_distribution != 'Ubuntu'
+
+- name: Install system pre-requisites
+  ansible.builtin.apt:
+    name: "{{ install_ansible_prerequisites }}"
+    state: present
+    update_cache: "{{ install_ansible_update_cache }}"
+  become: true
+
+- name: Add official Ansible PPA repository
+  ansible.builtin.apt_repository:
+    repo: "{{ install_ansible_ppa }}"
+    state: present
+    update_cache: true
+  become: true
+
+- name: Install Ansible package
+  ansible.builtin.apt:
+    name: "{{ install_ansible_package }}"
+    state: present
+  become: true
+
+- name: Verify Ansible installation
+  ansible.builtin.command: ansible --version
+  register: ansible_version_output
+  changed_when: false
+
+- name: Display installed Ansible version
+  ansible.builtin.debug:
+    var: ansible_version_output.stdout_lines

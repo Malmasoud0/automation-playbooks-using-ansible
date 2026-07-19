@@ -1,0 +1,31 @@
+---
+# defaults file for install_elasticsearch role on Ubuntu 24.04 LTS
+
+elasticsearch_version: "8.x"
+elasticsearch_packages:
+  - elasticsearch
+
+elasticsearch_apt_key_url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+elasticsearch_apt_keyring_path: "/etc/apt/keyrings/elasticsearch-keyring.asc"
+elasticsearch_apt_repo: "deb [signed-by={{ elasticsearch_apt_keyring_path }}] https://artifacts.elastic.co/packages/{{ elasticsearch_version }}/apt stable main"
+
+# Service Configuration
+elasticsearch_service_name: "elasticsearch"
+elasticsearch_service_state: "started"
+elasticsearch_service_enabled: "{{ services_enabled | default(true) }}"
+
+# Cluster Configuration
+elasticsearch_cluster_name: "wsl-monitoring-cluster"
+elasticsearch_node_name: "wsl-node-1"
+elasticsearch_network_host: "127.0.0.1"
+elasticsearch_http_port: 9200
+
+# Security Configuration
+elasticsearch_security_enabled: true
+elasticsearch_admin_password: "{{ vault_elasticsearch_admin_password }}"
+elasticsearch_kibana_system_password: "{{ vault_elasticsearch_kibana_system_password }}"
+
+# JVM Heap Settings for WSL compatibility (prevents OOM on Windows host)
+elasticsearch_jvm_options_file: "/etc/elasticsearch/jvm.options.d/heap.options"
+elasticsearch_min_heap_size: "512m"
+elasticsearch_max_heap_size: "512m"

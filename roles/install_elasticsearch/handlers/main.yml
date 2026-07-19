@@ -1,0 +1,8 @@
+---
+# handlers file for install_elasticsearch role
+
+- name: Restart Elasticsearch
+  ansible.builtin.systemd_service:
+    name: "{{ elasticsearch_service_name }}"
+    state: restarted
+  become: true

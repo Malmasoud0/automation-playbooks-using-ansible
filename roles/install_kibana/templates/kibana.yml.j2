@@ -1,0 +1,13 @@
+# ============================= Kibana Configuration ==============================
+# Managed by Ansible
+
+server.port: {{ kibana_server_port }}
+server.host: "{{ kibana_server_host }}"
+
+elasticsearch.hosts: {{ kibana_elasticsearch_hosts | to_json }}
+
+{% if elasticsearch_security_enabled | bool %}
+# Security Credentials for Elasticsearch connection
+elasticsearch.username: "{{ kibana_elasticsearch_username }}"
+elasticsearch.password: "{{ kibana_elasticsearch_password }}"
+{% endif %}

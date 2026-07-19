@@ -1,0 +1,23 @@
+---
+# defaults file for install_kibana role on Ubuntu 24.04 LTS
+
+kibana_packages:
+  - kibana
+
+# Service Configuration
+kibana_service_name: "kibana"
+kibana_service_state: "started"
+kibana_service_enabled: "{{ services_enabled | default(true) }}"
+
+# Kibana Server Settings (binding to 0.0.0.0 allows accessing it via Windows browser on localhost:5601)
+kibana_server_host: "0.0.0.0"
+kibana_server_port: 5601
+
+# Elasticsearch Endpoint Settings
+kibana_elasticsearch_hosts:
+  - "http://127.0.0.1:9200"
+
+# Security Configuration
+elasticsearch_security_enabled: true
+kibana_elasticsearch_username: "kibana_system"
+kibana_elasticsearch_password: "{{ vault_elasticsearch_kibana_system_password }}"

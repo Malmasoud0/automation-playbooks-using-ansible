@@ -1,0 +1,17 @@
+---
+# defaults file for install_ansible role on Ubuntu 24.04 LTS
+
+# The repository PPA to add for Ansible
+install_ansible_ppa: "ppa:ansible/ansible"
+
+# Pre-requisite packages needed before adding PPA and installing Ansible
+install_ansible_prerequisites:
+  - software-properties-common
+  - gpg
+  - dirmngr
+
+# The Ansible package name to install
+install_ansible_package: "ansible"
+
+# Whether to update the apt cache before installing
+install_ansible_update_cache: true

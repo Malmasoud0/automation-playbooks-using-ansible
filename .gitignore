@@ -1,0 +1,12 @@
+# Ansible vault password file - contains plaintext password! MUST NEVER BE PUSHED!
+.vault_pass
+
+# Ansible retry files
+*.retry
+
+# Temporary or backup files
+*~
+*.log
+*.tmp
+temp_pass.txt
+temp_encrypted.txt

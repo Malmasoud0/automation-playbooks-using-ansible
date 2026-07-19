@@ -1,0 +1,14 @@
+# Module: postgresql
+# Docs: https://www.elastic.co/guide/en/beats/metricbeat/8.19/metricbeat-module-postgresql.html
+# Managed by Ansible
+
+- module: postgresql
+  metricsets:
+    - database
+    - bgwriter
+    - activity
+    - statement
+  period: {{ metricbeat_postgresql_period }}
+  hosts: {{ metricbeat_postgresql_hosts | to_json }}
+  username: "{{ metricbeat_postgresql_username }}"
+  password: "{{ metricbeat_postgresql_password }}"

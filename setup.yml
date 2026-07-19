@@ -1,0 +1,22 @@
+---
+- name: Automate System Provisions on Ubuntu 24.04 LTS
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars_files:
+    - secrets.vault
+  vars:
+    services_enabled: true
+    ansible_python_interpreter: /usr/bin/python3
+
+  roles:
+    - role: install_ansible
+      tags: [ansible, setup]
+    - role: install_elasticsearch
+      tags: [elasticsearch, elastic, monitor]
+    - role: install_kibana
+      tags: [kibana, elastic, monitor]
+    - role: install_metricbeat
+      tags: [metricbeat, elastic, monitor]
+    - role: install_postgresql_16
+      tags: [postgresql, postgres, database]

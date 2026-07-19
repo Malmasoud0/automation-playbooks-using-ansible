@@ -1,0 +1,61 @@
+---
+# tasks file to create database, user, and verify connection on PostgreSQL 16
+
+- name: Create database user '{{ postgresql_database_user }}'
+  community.postgresql.postgresql_user:
+    name: "{{ postgresql_database_user }}"
+    password: "{{ postgresql_database_password }}"
+    role_attr_flags: "LOGIN"
+    state: present
+  become: true
+  become_user: postgres
+
+- name: Grant pg_read_all_stats monitoring role to '{{ postgresql_database_user }}'
+  ansible.builtin.command:
+    cmd: "psql -c 'GRANT pg_read_all_stats TO {{ postgresql_database_user }};'"
+  become: true
+  become_user: postgres
+  changed_when: false
+
+- name: Create database '{{ postgresql_database_name }}' with owner '{{ postgresql_database_user }}'
+  community.postgresql.postgresql_db:
+    name: "{{ postgresql_database_name }}"
+    owner: "{{ postgresql_database_user }}"
+    state: present
+  become: true
+  become_user: postgres
+
+- name: Verify connection and authentication by executing select query
+  ansible.builtin.command:
+    cmd: >
+      psql -U {{ postgresql_database_user }} -d {{ postgresql_database_name }} -h localhost -c "SELECT 'Hello Ahmed, PostgreSQL 16 Connection Successful!' AS test_connection;"
+  environment:
+    PGPASSWORD: "{{ postgresql_database_password }}"
+  register: postgresql_test_query
+  changed_when: false
+
+- name: Display test verification results
+  ansible.builtin.debug:
+    var: postgresql_test_query.stdout_lines
+
+- name: Template out pg_stat_statements SQL script to the host
+  ansible.builtin.template:
+    src: pg_stat_statements.sql.j2
+    dest: /tmp/pg_stat_statements.sql
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  become: true
+
+- name: Execute pg_stat_statements creation SQL script
+  ansible.builtin.command:
+    cmd: "psql -d {{ postgresql_database_name }} -f /tmp/pg_stat_statements.sql"
+  become: true
+  become_user: postgres
+  changed_when: false
+
+- name: Remove temporary SQL script
+  ansible.builtin.file:
+    path: /tmp/pg_stat_statements.sql
+    state: absent
+  become: true

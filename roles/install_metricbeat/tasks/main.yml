@@ -1,0 +1,93 @@
+---
+# tasks file for install_metricbeat role
+
+- name: Ensure Ubuntu system is targeted
+  ansible.builtin.fail:
+    msg: "This role is designed specifically for Ubuntu systems. Found: {{ ansible_distribution }}"
+  when: ansible_distribution != 'Ubuntu'
+
+- name: Install system dependencies for APT repositories
+  ansible.builtin.apt:
+    name:
+      - curl
+      - ca-certificates
+      - gnupg
+    state: present
+    update_cache: true
+  become: true
+
+- name: Create secure APT keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Download official Elasticsearch APT GPG key securely (for Metricbeat)
+  ansible.builtin.get_url:
+    url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+    dest: "/etc/apt/keyrings/elasticsearch-keyring.asc"
+    mode: '0644'
+  become: true
+
+- name: Add official Elasticsearch APT repository with signed-by keyring
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/elasticsearch-keyring.asc] https://artifacts.elastic.co/packages/8.x/apt stable main"
+    state: present
+    update_cache: true
+    filename: elastic
+  become: true
+
+- name: Install Metricbeat
+  ansible.builtin.apt:
+    name: "{{ metricbeat_packages }}"
+    state: present
+  become: true
+
+- name: Write Metricbeat configuration file
+  ansible.builtin.template:
+    src: metricbeat.yml.j2
+    dest: /etc/metricbeat/metricbeat.yml
+    owner: root
+    group: root
+    mode: '0600'
+  become: true
+  notify: Restart Metricbeat
+
+- name: Enable system module for monitoring
+  ansible.builtin.command: metricbeat modules enable system
+  register: enable_module_output
+  changed_when: "'Already enabled' not in enable_module_output.stdout"
+  become: true
+
+- name: Enable postgresql module for monitoring
+  ansible.builtin.command: metricbeat modules enable postgresql
+  register: enable_postgresql_output
+  changed_when: "'Already enabled' not in enable_postgresql_output.stdout"
+  become: true
+  when: metricbeat_postgresql_enabled | bool
+
+- name: Write Metricbeat postgresql module configuration file
+  ansible.builtin.template:
+    src: postgresql.yml.j2
+    dest: /etc/metricbeat/modules.d/postgresql.yml
+    owner: root
+    group: root
+    mode: '0600'
+  become: true
+  notify: Restart Metricbeat
+  when: metricbeat_postgresql_enabled | bool
+
+- name: Ensure Metricbeat service is started and enabled on boot
+  ansible.builtin.systemd_service:
+    name: "{{ metricbeat_service_name }}"
+    state: "{{ metricbeat_service_state }}"
+    enabled: "{{ metricbeat_service_enabled }}"
+    daemon_reload: true
+  become: true
+
+- name: Run Metricbeat setup to load dashboards and index templates into Elasticsearch and Kibana
+  ansible.builtin.command: metricbeat setup
+  become: true
+  changed_when: false
+  tags: [metricbeat_setup]

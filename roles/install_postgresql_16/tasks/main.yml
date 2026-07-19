@@ -1,0 +1,103 @@
+---
+# tasks file for install_postgresql_16 role
+
+- name: Ensure Ubuntu system is targeted
+  ansible.builtin.fail:
+    msg: "This role is designed specifically for Ubuntu systems. Found: {{ ansible_distribution }}"
+  when: ansible_distribution != 'Ubuntu'
+
+- name: Install system dependencies for APT repositories
+  ansible.builtin.apt:
+    name:
+      - curl
+      - ca-certificates
+      - gnupg
+    state: present
+    update_cache: true
+  become: true
+
+- name: Create secure APT keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Download official PostgreSQL APT GPG key securely
+  ansible.builtin.get_url:
+    url: "{{ postgresql_apt_key_url }}"
+    dest: /etc/apt/keyrings/pgdg.asc
+    mode: '0644'
+  become: true
+
+- name: Add official PostgreSQL APT repository with signed-by keyring
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/pgdg.asc] http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
+    state: present
+    update_cache: true
+    filename: pgdg
+  become: true
+
+- name: Install PostgreSQL 16 and related packages
+  ansible.builtin.apt:
+    name: "{{ postgresql_packages }}"
+    state: present
+  become: true
+
+- name: Configure shared_preload_libraries for pg_stat_statements in postgresql.conf
+  ansible.builtin.lineinfile:
+    path: /etc/postgresql/16/main/postgresql.conf
+    regexp: '^#?shared_preload_libraries\s*='
+    line: "shared_preload_libraries = 'pg_stat_statements'"
+    state: present
+  become: true
+  register: postgresql_conf_change
+
+- name: Restart PostgreSQL to load pg_stat_statements
+  ansible.builtin.systemd_service:
+    name: "{{ postgresql_service_name }}"
+    state: restarted
+  become: true
+  when: postgresql_conf_change.changed
+
+- name: Ensure PostgreSQL service is started and enabled on boot
+  ansible.builtin.systemd_service:
+    name: "{{ postgresql_service_name }}"
+    state: "{{ postgresql_service_state }}"
+    enabled: "{{ postgresql_service_enabled }}"
+  become: true
+
+- name: Check PostgreSQL status and version info
+  ansible.builtin.command: pg_config --version
+  register: postgresql_version_output
+  changed_when: false
+
+- name: Display installed PostgreSQL version
+  ansible.builtin.debug:
+    var: postgresql_version_output.stdout
+
+- name: Query PostgreSQL systemd service status
+  ansible.builtin.systemd_service:
+    name: "{{ postgresql_service_name }}"
+  register: postgresql_service_info
+
+- name: Display PostgreSQL systemd active and sub state
+  ansible.builtin.debug:
+    msg:
+      - "Active State: {{ postgresql_service_info.status.ActiveState }}"
+      - "Sub State: {{ postgresql_service_info.status.SubState }}"
+
+- name: Check database responsiveness using pg_isready
+  ansible.builtin.command: pg_isready
+  register: postgresql_isready_output
+  changed_when: false
+
+- name: Display pg_isready response
+  ansible.builtin.debug:
+    msg: "{{ postgresql_isready_output.stdout }}"
+
+- name: Provision database, user, and run tests
+  ansible.builtin.include_tasks: 05-create-database-and-user.yml
+  tags: [postgres_db, database]
+
+
