@@ -1,0 +1,33 @@
+---
+# uninstall file for install_metricbeat role
+
+- name: Stop and disable Metricbeat service
+  ansible.builtin.systemd_service:
+    name: "{{ metricbeat_service_name }}"
+    state: stopped
+    enabled: false
+  become: true
+  ignore_errors: true
+
+- name: Remove Metricbeat packages and purge configuration
+  ansible.builtin.apt:
+    name: "{{ metricbeat_packages }}"
+    state: absent
+    purge: true
+  become: true
+
+- name: Remove Metricbeat configuration, data, and log directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  become: true
+  loop:
+    - "/etc/metricbeat"
+    - "/var/lib/metricbeat"
+    - "/var/log/metricbeat"
+    - "/usr/share/metricbeat"
+
+- name: Run apt-get autoremove
+  ansible.builtin.apt:
+    autoremove: true
+  become: true

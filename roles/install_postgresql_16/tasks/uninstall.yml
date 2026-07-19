@@ -1,0 +1,42 @@
+---
+# uninstall file for install_postgresql_16 role
+
+- name: Stop and disable PostgreSQL service
+  ansible.builtin.systemd_service:
+    name: "{{ postgresql_service_name }}"
+    state: stopped
+    enabled: false
+  become: true
+  ignore_errors: true
+
+- name: Remove PostgreSQL packages and purge configuration
+  ansible.builtin.apt:
+    name: "{{ postgresql_packages }}"
+    state: absent
+    purge: true
+  become: true
+
+- name: Remove PostgreSQL GPG keyring and APT repository source
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  become: true
+  loop:
+    - "/etc/apt/keyrings/pgdg.asc"
+    - "/etc/apt/sources.list.d/pgdg.list"
+
+- name: Remove PostgreSQL configuration, data, and log directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  become: true
+  loop:
+    - "/etc/postgresql"
+    - "/var/lib/postgresql"
+    - "/var/log/postgresql"
+    - "/run/postgresql"
+
+- name: Run apt-get autoremove
+  ansible.builtin.apt:
+    autoremove: true
+  become: true

@@ -19,15 +19,16 @@ The setup configures a self-contained local loop monitoring and database stack:
 ```text
 /opt/malmasoud/
 ├── ansible.cfg            # Global Ansible settings (fixes privilege escalation tmp permissions)
-├── setup.yml              # Main orchestrator playbook
+├── setup.yml              # Main orchestrator provisioning playbook
+├── uninstall.yml          # Main orchestrator uninstallation playbook
 ├── secrets.vault          # Ansible Vault-encrypted credentials file
 ├── .vault_pass            # Plaintext password file to decrypt secrets.vault on-the-fly
 └── roles/
-    ├── install_ansible/        # Configures Python/APT libraries for Ansible tasks
-    ├── install_elasticsearch/  # Provisions, optimizes JVM heap, and configures Elasticsearch
-    ├── install_kibana/         # Deploys and secures the Kibana visual dashboard
-    ├── install_metricbeat/     # Deploys system/PostgreSQL monitoring agents and dashboards
-    └── install_postgresql_16/  # Installs and configures PostgreSQL 16 database, users, and extensions
+    ├── install_ansible/        # Configures / Uninstalls Ansible PPA and dependencies
+    ├── install_elasticsearch/  # Provisions / Purges Elasticsearch engine and heap configs
+    ├── install_kibana/         # Deploys / Purges the Kibana web dashboard
+    ├── install_metricbeat/     # Deploys / Purges system & PostgreSQL monitoring agents
+    └── install_postgresql_16/  # Installs / Purges PostgreSQL server, users, and stats extension
 ```
 
 ---
@@ -84,6 +85,17 @@ You can target individual components using their respective Ansible tags:
     ```bash
     ansible-playbook setup.yml --vault-password-file .vault_pass --tags "kibana"
     ```
+
+### 3️⃣ Run the Complete Stack Uninstallation
+To completely remove all installed packages, GPG keys, system repositories, configuration files, logs, and database directories, run the uninstallation orchestrator:
+```bash
+ansible-playbook uninstall.yml --vault-password-file .vault_pass
+```
+
+You can also target specific components for teardown using tags (e.g., just uninstalling Metricbeat):
+```bash
+ansible-playbook uninstall.yml --vault-password-file .vault_pass --tags "metricbeat"
+```
 
 ---
 

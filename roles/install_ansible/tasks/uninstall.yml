@@ -1,0 +1,20 @@
+---
+# uninstall file for install_ansible role
+
+- name: Remove official Ansible PPA repository
+  ansible.builtin.apt_repository:
+    repo: "{{ install_ansible_ppa }}"
+    state: absent
+  become: true
+
+- name: Remove Ansible package and purge configuration
+  ansible.builtin.apt:
+    name: "{{ install_ansible_package }}"
+    state: absent
+    purge: true
+  become: true
+
+- name: Run apt-get autoremove
+  ansible.builtin.apt:
+    autoremove: true
+  become: true

@@ -1,0 +1,32 @@
+---
+# uninstall file for install_kibana role
+
+- name: Stop and disable Kibana service
+  ansible.builtin.systemd_service:
+    name: "{{ kibana_service_name }}"
+    state: stopped
+    enabled: false
+  become: true
+  ignore_errors: true
+
+- name: Remove Kibana packages and purge configuration
+  ansible.builtin.apt:
+    name: "{{ kibana_packages }}"
+    state: absent
+    purge: true
+  become: true
+
+- name: Remove Kibana configuration, data, and log directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  become: true
+  loop:
+    - "/etc/kibana"
+    - "/var/lib/kibana"
+    - "/usr/share/kibana"
+
+- name: Run apt-get autoremove
+  ansible.builtin.apt:
+    autoremove: true
+  become: true

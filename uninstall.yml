@@ -1,0 +1,46 @@
+---
+# ==============================================================================
+# UNINSTALL ORCHESTRATOR PLAYBOOK
+# ==============================================================================
+# This playbook reverses all provisions and uninstalls all services deployed
+# by setup.yml (Metricbeat, Kibana, Elasticsearch, PostgreSQL, and Ansible).
+#
+# To run the complete uninstallation:
+#   ansible-playbook uninstall.yml --vault-password-file .vault_pass
+#
+# To uninstall specific roles using tags:
+#   ansible-playbook uninstall.yml --vault-password-file .vault_pass --tags "metricbeat"
+# ==============================================================================
+
+- name: Uninstall System Provisions and Monitoring Stack
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  vars_files:
+    - secrets.vault
+
+  vars:
+    # Use global python interpreter to bypass WSL local become restrictions
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+    - name: Uninstall Metricbeat Stack
+      ansible.builtin.include_tasks: roles/install_metricbeat/tasks/uninstall.yml
+      tags: [metricbeat, uninstall]
+
+    - name: Uninstall Kibana Stack
+      ansible.builtin.include_tasks: roles/install_kibana/tasks/uninstall.yml
+      tags: [kibana, uninstall]
+
+    - name: Uninstall Elasticsearch Stack
+      ansible.builtin.include_tasks: roles/install_elasticsearch/tasks/uninstall.yml
+      tags: [elasticsearch, uninstall]
+
+    - name: Uninstall PostgreSQL 16 Stack
+      ansible.builtin.include_tasks: roles/install_postgresql_16/tasks/uninstall.yml
+      tags: [postgresql, uninstall]
+
+    - name: Uninstall Ansible and PPA repository
+      ansible.builtin.include_tasks: roles/install_ansible/tasks/uninstall.yml
+      tags: [ansible, uninstall]
