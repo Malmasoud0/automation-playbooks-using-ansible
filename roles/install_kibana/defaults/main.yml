@@ -21,3 +21,8 @@ kibana_elasticsearch_hosts:
 elasticsearch_security_enabled: true
 kibana_elasticsearch_username: "kibana_system"
 kibana_elasticsearch_password: "{{ vault_elasticsearch_kibana_system_password }}"
+
+# Encryption Keys (Must be at least 32 characters long)
+kibana_encrypted_saved_objects_encryption_key: "a_secure_encryption_key_of_32_chars_saved_obj"
+kibana_reporting_encryption_key: "a_secure_encryption_key_of_32_chars_reporting"
+kibana_security_encryption_key: "a_secure_encryption_key_of_32_chars_security"

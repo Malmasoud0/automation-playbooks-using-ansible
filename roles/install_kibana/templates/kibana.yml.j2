@@ -11,3 +11,8 @@ elasticsearch.hosts: {{ kibana_elasticsearch_hosts | to_json }}
 elasticsearch.username: "{{ kibana_elasticsearch_username }}"
 elasticsearch.password: "{{ kibana_elasticsearch_password }}"
 {% endif %}
+
+# Encryption Keys for Saved Objects, Reporting, and Security (Required for Actions & Alerts)
+xpack.encryptedSavedObjects.encryptionKey: "{{ kibana_encrypted_saved_objects_encryption_key }}"
+xpack.reporting.encryptionKey: "{{ kibana_reporting_encryption_key }}"
+xpack.security.encryptionKey: "{{ kibana_security_encryption_key }}"
