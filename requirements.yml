@@ -1,0 +1,12 @@
+# ==============================================================================
+# ANSIBLE EXTERNAL DEPENDENCIES REQUIREMENTS
+# ==============================================================================
+# To install the required collections, run:
+#
+# ansible-galaxy collection install -r requirements.yml
+# ==============================================================================
+---
+collections:
+  # Required for PostgreSQL user, database, and privilege management tasks
+  - name: community.postgresql
+    version: ">=3.4.0"
