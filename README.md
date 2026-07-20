@@ -1,5 +1,7 @@
 # System Provisioning and Monitoring Stack with Ansible
 
+**Last Updated:** July 20, 2026
+
 This repository contains a modular and highly automated Ansible provisioning setup designed to deploy, configure, and monitor a robust open-source server stack on **Ubuntu 24.04 LTS** (fully compatible with WSL 2 and standalone environments).
 
 ---
